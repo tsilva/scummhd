@@ -13,6 +13,9 @@ for future visual-enhancement research. It starts with **Flight of the Amazon
 Queen**: import existing AgentSCUMM run captures, preserve their provenance, and
 review the collection before choosing training examples.
 
+Browse the [Queen dataset on Hugging Face](https://huggingface.co/datasets/tsilva/scummhd-queen):
+159 representative frames with subtitle and story/cinematic labels.
+
 This bootstrap collects data only. It does not generate enhanced images, train a
 model, or change the game renderer.
 

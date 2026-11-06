@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "general": {"domain": "https://app.infisical.com"},
+  "secrets-management": {
+    "project-id": "72a466bb-8c3f-482f-a214-cff243afb7e4",
+    "environment": "dev",
+    "secret-path": "/agents/huggingface-queen"
+  }
+}
