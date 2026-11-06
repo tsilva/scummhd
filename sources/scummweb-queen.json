@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "game_id": "flight-of-the-amazon-queen",
+  "source_id": "scummweb-catalog-queen",
+  "source_type": "scummweb_catalog",
+  "catalog_url": "https://scummweb.tsilva.eu/flight-of-the-amazon-queen",
+  "mapping_repository": "https://github.com/tsilva/scummweb",
+  "mapping_path": "data/artwork-storage.json",
+  "provenance": "Original gameplay screenshots selected from ScummWEB's published artwork mapping. Capture session and native rendering resolution are unknown. Game-art rights are separate from this repository's code license.",
+  "images": [
+    {
+      "logical_path": "/launcher/queen-shot-1.png",
+      "url": "https://scummvm-games.tsilva.eu/artwork/7e3083622b727876eb0b27ffdc3b4b80e22ffa23e4609efd544f20e3dc9827bb/queen-shot-1.png",
+      "sha256": "7e3083622b727876eb0b27ffdc3b4b80e22ffa23e4609efd544f20e3dc9827bb",
+      "bytes": 92412,
+      "width": 640,
+      "height": 480
+    },
+    {
+      "logical_path": "/launcher/queen-shot-2.png",
+      "url": "https://scummvm-games.tsilva.eu/artwork/418359c9bc33cb1e25d5b48d359b80a8070660695e2960202f177657aa466fa5/queen-shot-2.png",
+      "sha256": "418359c9bc33cb1e25d5b48d359b80a8070660695e2960202f177657aa466fa5",
+      "bytes": 91236,
+      "width": 640,
+      "height": 480
+    },
+    {
+      "logical_path": "/launcher/queen-shot-3.png",
+      "url": "https://scummvm-games.tsilva.eu/artwork/98c712fb7ba69e013885126368d52ca75d92507cec850c224dc4b6fe303bcbe4/queen-shot-3.png",
+      "sha256": "98c712fb7ba69e013885126368d52ca75d92507cec850c224dc4b6fe303bcbe4",
+      "bytes": 134133,
+      "width": 640,
+      "height": 480
+    }
+  ]
+}

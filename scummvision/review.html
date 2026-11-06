@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'">
+<title>SCUMMvision — Queen frame review</title>
+<style>
+body{background:#15181c;color:#eee;font:16px system-ui;margin:24px}
+header{position:sticky;top:0;background:#15181c;padding:12px 0;z-index:1}
+h1{font-size:26px;margin:0 0 12px}p{max-width:950px;line-height:1.5}
+.toolbar,.labels{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+select,button{font:inherit;background:#303943;color:#fff;border:1px solid #596572;border-radius:5px;padding:6px}
+button{cursor:pointer}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:16px}
+figure{margin:0;background:#252b31;padding:12px;border-radius:8px}figure[hidden]{display:none}
+img{width:100%;height:225px;object-fit:contain;image-rendering:pixelated;background:#000}
+figcaption{font:12px monospace;overflow-wrap:anywhere;line-height:1.6;margin:8px 0}
+.labels{font-size:14px;gap:8px}.labels label{display:flex;align-items:center;gap:5px}
+#status{color:#b4d7bd}a{color:#b9d6fc}
+textarea{width:100%;box-sizing:border-box;background:#101419;color:#ddd;font:12px monospace}
+</style>
+<header>
+<h1>SCUMMvision · Flight of the Amazon Queen</h1>
+<p>Tag visible dialogue subtitles and whether the frame is a cutscene. Inventory labels and verb prompts alone are not subtitles. Leave uncertain frames as unknown. Originals are preserved.</p>
+<div class="toolbar">
+<label>Subtitles <select id="filter-subtitles"><option value="any">Any</option><option value="true">Yes</option><option value="false">No</option><option value="null">Unknown</option></select></label>
+<label>Cutscene <select id="filter-cutscene"><option value="any">Any</option><option value="true">Yes</option><option value="false">No</option><option value="null">Unknown</option></select></label>
+<label><input type="checkbox" id="diverse" checked> One per similarity group</label>
+<button id="export-labels">Export labels</button>
+<button id="export-selection">Export selected frames</button>
+</div>
+<p id="status" aria-live="polite"></p>
+<p>Label edits are drafts in this browser. Export labels, then run <code>import-labels</code> to save them to the dataset. Exporting a selection includes current draft labels; import labels first for a canonical selection.</p>
+<details id="export-preview" hidden><summary>Last exported JSON</summary><textarea id="export-json" aria-label="Exported JSON" rows="8" readonly></textarea></details>
+</header>
+<main id="frames"></main>
+<script type="application/json" id="dataset">__DATASET_JSON__</script>
+<script>
+const dataset = JSON.parse(document.getElementById('dataset').textContent);
+const storageKey = 'scummvision-labels-' + dataset.dataset_fingerprint;
+let drafts = {};
+try { drafts = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch {}
+const cards = new Map();
+const status = document.getElementById('status');
+let visible = [];
+function labelsFor(frame) {
+  const draft = drafts[frame.id];
+  return draft && JSON.stringify(draft.base_labels) === JSON.stringify(frame.labels) ? draft.labels : frame.labels;
+}
+function persist() { try { localStorage.setItem(storageKey, JSON.stringify(drafts)); } catch {} }
+function filter() {
+  const subtitles = document.getElementById('filter-subtitles').value;
+  const cutscene = document.getElementById('filter-cutscene').value;
+  const diverse = document.getElementById('diverse').checked;
+  const seen = new Set(); visible = [];
+  for (const frame of dataset.frames) {
+    const labels = labelsFor(frame);
+    const matches = (subtitles === 'any' || String(labels.has_subtitles) === subtitles)
+      && (cutscene === 'any' || String(labels.is_cutscene) === cutscene);
+    const show = matches && (!diverse || !seen.has(frame.group));
+    cards.get(frame.id).hidden = !show;
+    if (show) { seen.add(frame.group); visible.push(frame); }
+  }
+  const changed = dataset.frames.filter(f => JSON.stringify(labelsFor(f)) !== JSON.stringify(f.labels)).length;
+  status.textContent = `${visible.length} shown / ${dataset.frames.length} originals · ${changed} unsaved label changes`;
+}
+for (const frame of dataset.frames) {
+  const figure = document.createElement('figure'); figure.dataset.id = frame.id;
+  const link = document.createElement('a'); link.href = frame.path;
+  const image = document.createElement('img'); image.src = frame.path; image.loading = 'lazy';
+  image.alt = 'Original game capture'; image.width = frame.width; image.height = frame.height;
+  link.append(image); figure.append(link);
+  const caption = document.createElement('figcaption');
+  caption.textContent = `${frame.id.slice(0, 20)}… · ${frame.width} × ${frame.height}`;
+  figure.append(caption);
+  const fields = document.createElement('div'); fields.className = 'labels';
+  for (const [name, title] of [['has_subtitles','Subtitles'],['is_cutscene','Cutscene']]) {
+    const label = document.createElement('label'); label.append(title + ' ');
+    const select = document.createElement('select'); select.name = name;
+    select.setAttribute('aria-label', title + ' ' + frame.id.slice(6, 18));
+    for (const [value, text] of [['null','Unknown'],['true','Yes'],['false','No']]) {
+      const option = document.createElement('option'); option.value = value; option.textContent = text; select.append(option);
+    }
+    select.value = String(labelsFor(frame)[name]);
+    select.addEventListener('change', () => {
+      const labels = {...labelsFor(frame), [name]: JSON.parse(select.value)};
+      drafts[frame.id] = {frame_id: frame.id, base_labels: {...frame.labels}, labels};
+      persist(); filter();
+    });
+    label.append(select); fields.append(label);
+  }
+  figure.append(fields); document.getElementById('frames').append(figure); cards.set(frame.id, figure);
+}
+function download(name, data) {
+  const text = JSON.stringify(data,null,2)+'\n';
+  document.getElementById('export-json').value = text;
+  document.getElementById('export-preview').hidden = false;
+  const url = URL.createObjectURL(new Blob([text], {type:'application/json'}));
+  const link = document.createElement('a'); link.href = url; link.download = name;
+  document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+document.getElementById('export-labels').addEventListener('click', () => {
+  const annotations = dataset.frames.filter(f => JSON.stringify(labelsFor(f)) !== JSON.stringify(f.labels))
+    .map(f => ({frame_id:f.id,base_labels:f.labels,labels:labelsFor(f)}));
+  download('scummvision-labels.json', {schema_version:1,game_id:dataset.game_id,dataset_fingerprint:dataset.dataset_fingerprint,annotations});
+});
+document.getElementById('export-selection').addEventListener('click', () => {
+  download('scummvision-selection.json', {schema_version:1,game_id:dataset.game_id,dataset_fingerprint:dataset.dataset_fingerprint,path_base:'dataset_root',
+    frames:visible.map(f => ({frame_id:f.id,path:f.path,labels:labelsFor(f),similarity_group:f.group}))});
+});
+for (const id of ['filter-subtitles','filter-cutscene','diverse']) document.getElementById(id).addEventListener('change', filter);
+filter();
+</script>
+</html>

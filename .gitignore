@@ -1,0 +1,9 @@
+/.venv/
+/data/
+/.internal/
+/INBOX.md
+__pycache__/
+*.py[cod]
+.DS_Store
+.env
+.env.*

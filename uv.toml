@@ -1,0 +1,2 @@
+# Explicit selection isolates this project from machine-wide package exceptions.
+exclude-newer = "7 days"

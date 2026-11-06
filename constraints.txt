@@ -1,0 +1,4 @@
+# CI bootstrap only; runtime dependencies are pinned in uv.lock.
+uv==0.11.13
+mistralai!=2.4.6
+guardrails-ai!=0.10.1
