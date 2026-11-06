@@ -3,7 +3,7 @@ name = "scummhd"
 version = "0.1.0"
 description = "Build provenance-preserving frame datasets from ScummWEB adventures."
 requires-python = ">=3.11"
-dependencies = ["pillow>=11,<13"]
+dependencies = ["pillow>=11,<14"]
 
 [project.optional-dependencies]
 huggingface = ["datasets>=4,<6"]
