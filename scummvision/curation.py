@@ -95,6 +95,22 @@ def checked_labels(value):
     return value
 
 
+def checked_review(value):
+    if value is None:
+        return None
+    fields = {"review_id", "reviewer_type", "method", "policy_version", "context_checked", "note"}
+    if not isinstance(value, dict) or set(value) != fields:
+        raise ValueError("Review provenance has unsupported or missing fields")
+    if value["reviewer_type"] not in {"human", "agent", "unknown"}:
+        raise ValueError("Invalid reviewer type")
+    if type(value["context_checked"]) is not bool:
+        raise ValueError("context_checked must be a boolean")
+    if any(not isinstance(value[key], str) or len(value[key]) > 2000
+           for key in fields - {"context_checked"}):
+        raise ValueError("Review provenance strings must be bounded text")
+    return value.copy()
+
+
 def import_labels(root, path):
     batch = read_json(path)
     if batch.get("schema_version") != 1 or batch.get("game_id") != GAME:
@@ -111,15 +127,21 @@ def import_labels(root, path):
             seen.add(frame_id)
             labels = checked_labels(annotation["labels"])
             baseline = checked_labels(annotation["base_labels"])
+            review = checked_review(annotation.get("review"))
             row = dataset.rows[frame_id]
             if row["labels"] != baseline and row["labels"] != labels:
                 raise ValueError("Annotations conflict with newer saved labels; rebuild the gallery")
-            if row["labels"] != labels:
-                changes.append((row, labels))
+            if row["labels"] != labels or (review is not None and row.get("label_review") != review):
+                changes.append((row, labels, review))
         timestamp = datetime.now(timezone.utc).isoformat()
-        for row, labels in changes:
+        for row, labels, review in changes:
             row["labels"] = labels.copy()
             row["labels_updated_at"] = timestamp
+            if review is not None:
+                row["label_review"] = review
+            else:
+                # New unattributed edits must not inherit an earlier reviewer's claim.
+                row.pop("label_review", None)
             known = sum(value is not None for value in labels.values())
             row["review_status"] = "labeled" if known == 2 else "partially_labeled" if known else "unreviewed"
         dataset.save()

@@ -254,7 +254,7 @@ def import_catalog(spec_path: Path, output: Path):
             if cached:
                 data = bounded_read(safe_file(output, cached[0]["path"]))
             else:
-                request = Request(entry["url"], headers={"User-Agent": "SCUMMvision/0.1 dataset collector"})
+                request = Request(entry["url"], headers={"User-Agent": "ScummHD/0.1 dataset collector"})
                 with urlopen(request, timeout=30) as response:
                     if response.geturl() != entry["url"]:
                         raise ValueError("Pinned catalog downloads cannot redirect")
@@ -329,6 +329,9 @@ def main(argv=None):
     select.add_argument("--cutscene", choices=["yes", "no", "unknown"])
     select.add_argument("--diverse", action="store_true")
     select.add_argument("--output", type=Path)
+    hub = commands.add_parser("export-hf", help="Prepare a local Hugging Face ImageFolder dataset; never upload")
+    hub.add_argument("--output", type=Path, required=True)
+    hub.add_argument("--all-frames", action="store_true", help="Include unreviewed nonrepresentatives too")
     args = parser.parse_args(argv)
     try:
         output = args.dataset.resolve()
@@ -349,9 +352,12 @@ def main(argv=None):
         elif args.command == "select":
             from .curation import select_frames
             result = select_frames(output, args.subtitles, args.cutscene, args.diverse, args.output)
+        elif args.command == "export-hf":
+            from .hf_export import export_dataset
+            result = export_dataset(output, args.output, args.all_frames)
         else:
             result = summarize(read_rows(output), read_json(output / "sources.json"), read_json(output / "quarantine.json"))
     except (ValueError, OSError, KeyError, TypeError, Image.DecompressionBombError) as error:
-        parser.exit(1, f"scummvision: {error}\n")
+        parser.exit(1, f"scummhd: {error}\n")
     print(json.dumps(result, indent=2))
     return 0

@@ -1,6 +1,6 @@
 # Flight of the Amazon Queen frames
 
-The first SCUMMvision collection contains original ScummWEB game screenshots.
+The first ScummHD collection contains original ScummWEB game screenshots.
 It is an uncurated source collection, not a paired enhancement dataset.
 
 ## Sources
@@ -31,9 +31,12 @@ retry the source import before running verification. Concurrent imports are refu
 ## Labels and specific subsets
 
 Each image has `labels.has_subtitles` and `labels.is_cutscene`. Values are
-`true`, `false`, or `null` for unknown. Subtitles means visible dialogue text;
-inventory labels, verb prompts, and menu text alone do not count. Cutscene means
-a scripted noninteractive sequence. Use the surrounding sequence when a still
+`true`, `false`, or `null` for unknown. Subtitles means visible spoken dialogue or
+narrative captions; inventory labels, verb prompts, signs, dialogue-choice menus
+and credits alone do not count. Cutscene means a scripted story/cinematic sequence,
+including staged encounter shots and the ending presentation. Ordinary interactive
+conversations, object examination, walking and routine room fades do not count.
+Use the surrounding sequence when a still
 cannot establish this; do not assume that missing interface elements imply a cutscene.
 
 The gallery starts from saved labels. Edits are browser-local drafts until you
@@ -41,6 +44,13 @@ export them and run `import-labels FILE`. The importer validates the image inven
 label types, and original saved labels before applying a batch. Conflicting edits
 are rejected instead of overwriting newer annotations. Rebuild the gallery with
 `review` after importing labels. These labels do not establish training readiness.
+
+Annotation batches may include a `review` object with `review_id`, `reviewer_type`
+(`human`, `agent`, or `unknown`), `method`, `policy_version`, `context_checked`,
+and a bounded `note`. It is retained as `label_review` in the local manifest.
+Unattributed edits clear earlier reviewer provenance when they change labels.
+Labels are attached only to reviewed images; similarity-group membership never
+propagates them to other frames.
 
 Use `select --subtitles no --cutscene no --diverse` for one matching image per
 similarity group, or omit filters to include unknown labels. Unknown is distinct
@@ -82,3 +92,5 @@ implemented. Enhanced targets and model training remain separate future work.
 Game artwork belongs to its respective rights holders. The code license grants
 no rights to distribute the images or game data. No dataset license or public
 dataset release is declared.
+
+For a portable image-and-label bundle, see [Hugging Face export](../../docs/huggingface.md).

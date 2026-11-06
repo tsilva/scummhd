@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "profiles": [],
+  "sources": [
+    {
+      "path": "image-assets/sources/logo-source.png",
+      "sha256": "ad09a7d0a57237121342aab800247226036a05d0a996c7b45d8696e1ce8844fb",
+      "evidence": "Codex native ImageGen output exec-eb21d482-9962-40ef-90ad-056c90a2bcea.png; exact model not disclosed. Untouched original bytes retained. Generated on 2026-11-06; exact timestamp unavailable."
+    },
+    {
+      "path": "image-assets/sources/icon-source.png",
+      "sha256": "b26e362acf336dc1cc9204d3c904007f9930d4133a9a2a741a26f6501a5cfc4b",
+      "evidence": "Codex native ImageGen output exec-1f7ada0e-3efa-47d9-a6f4-466fd887246f.png; exact model not disclosed. Untouched original bytes retained. Generated on 2026-11-06; exact timestamp unavailable."
+    }
+  ],
+  "exports": [
+    {
+      "role": "readme-logo",
+      "path": "logo.png",
+      "sha256": "5127d3906f2a8962d5edba123e28cd80f08bf5755e75d838683628a2fea47542",
+      "source": "image-assets/sources/logo-source.png"
+    },
+    {
+      "role": "social-preview",
+      "path": "image-assets/web-seo/og-image-1200x630.png",
+      "sha256": "3d45832e04ce76208db1d55099b8d0c6a92d22ffc732cc642456876e5a7f7153",
+      "source": "image-assets/sources/logo-source.png"
+    },
+    {
+      "role": "favicon",
+      "path": "image-assets/web-seo/favicon/favicon.ico",
+      "sha256": "bc484d94ebe9132c85c0ac40caa6b513a1ea97f641b73e05d613de713d0da580",
+      "source": "image-assets/sources/icon-source.png"
+    },
+    {
+      "role": "apple-icon",
+      "path": "image-assets/web-seo/apple-touch-icon.png",
+      "sha256": "7e769b846a67610d386d04541da83bffa88cb34bab097560a8fa54a8592c007d",
+      "source": "image-assets/sources/icon-source.png"
+    },
+    {
+      "role": "android-icon",
+      "path": "image-assets/web-seo/android-chrome-192.png",
+      "sha256": "4db18fc7ab015336d04ff8680a0647129b7cff89ccd971d27523658125bbd2fa",
+      "source": "image-assets/sources/icon-source.png"
+    }
+  ],
+  "derivation": "Preserve original source PNGs. For exports only, clear alpha values below 8 to remove nearly invisible edge noise, trim transparent bounds, then derive sizes with the create-image-assets workflow. Root logo has a 24 px even transparent margin; social preview centers the logo on #15181c.",
+  "additionalExports": [
+    {
+      "role": "logo",
+      "path": "image-assets/logo/logo-1024.png",
+      "sha256": "986c1292b76d3160f125e382d03f8768c4cf1e23d62c0a2d37d3ad71ddb4e77f",
+      "source": "image-assets/sources/logo-source.png"
+    },
+    {
+      "role": "icon",
+      "path": "image-assets/icon/icon-1024.png",
+      "sha256": "c9e973a739ed37d984ba711eb041904bbdadef38df925b2fee3a254d8ba604f2",
+      "source": "image-assets/sources/icon-source.png"
+    },
+    {
+      "role": "favicon",
+      "path": "image-assets/web-seo/favicon/favicon-16.png",
+      "sha256": "2fe844b06511f2cd56772038aa181804abf2d75314850febac3b330c90b22fd7",
+      "source": "image-assets/sources/icon-source.png"
+    },
+    {
+      "role": "favicon",
+      "path": "image-assets/web-seo/favicon/favicon-32.png",
+      "sha256": "c3c61b0169cc1614ccab1bcb89174dcc190a95c42a87c4253de5d362565e0f2f",
+      "source": "image-assets/sources/icon-source.png"
+    },
+    {
+      "role": "favicon",
+      "path": "image-assets/web-seo/favicon/favicon-48.png",
+      "sha256": "4e6fd0d5acf0ab067dfc55d13e67614e7078bdf40d7dfa05bbb9eddd4a047816",
+      "source": "image-assets/sources/icon-source.png"
+    },
+    {
+      "role": "android-icon",
+      "path": "image-assets/web-seo/android-chrome-512.png",
+      "sha256": "9124d4ef53a0d515d7fdcd178eded16b9df981edd910f784b61d791caad62c6a",
+      "source": "image-assets/sources/icon-source.png"
+    }
+  ]
+}

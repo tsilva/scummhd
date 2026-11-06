@@ -8,6 +8,7 @@ from PIL import Image
 
 from scummvision.cli import GAME, digest, import_run, read_rows, verify, write_json
 from scummvision.curation import dedupe, fingerprint, import_labels, select_frames
+from scummvision.hf_export import export_dataset
 
 
 class CurationTests(unittest.TestCase):
@@ -102,6 +103,61 @@ class CurationTests(unittest.TestCase):
             select_frames(self.dataset, output=self.dataset / self.rows[0]['path'])
         with self.assertRaisesRegex(ValueError, 'overwrite'):
             select_frames(self.dataset, output=self.dataset / 'summary.json')
+
+    def test_annotation_review_provenance_is_saved_and_is_idempotent(self):
+        annotation = self.annotation(0, True, False)
+        annotation['review'] = {
+            'review_id': 'review-a', 'reviewer_type': 'agent', 'method': 'visual_review',
+            'policy_version': 'subtitles-cutscene-v1', 'context_checked': True,
+            'note': 'Interactive dialogue confirmed by nearby captures.',
+        }
+        path = self.batch([annotation])
+        import_labels(self.dataset, path)
+        row = next(row for row in read_rows(self.dataset) if row['id'] == self.rows[0]['id'])
+        self.assertEqual(row['label_review'], annotation['review'])
+        before = (self.dataset / 'manifest.jsonl').read_bytes()
+        self.assertEqual(import_labels(self.dataset, path)['updated_frames'], 0)
+        self.assertEqual(before, (self.dataset / 'manifest.jsonl').read_bytes())
+        replacement = self.annotation(0, False, False)
+        replacement['base_labels'] = annotation['labels']
+        import_labels(self.dataset, self.batch([replacement]))
+        row = next(row for row in read_rows(self.dataset) if row['id'] == self.rows[0]['id'])
+        self.assertNotIn('label_review', row)
+
+    def test_hf_export_preserves_bytes_and_excludes_private_provenance(self):
+        dedupe(self.dataset, 0, 6)
+        annotations = [self.annotation(i, bool(i), False) for i in range(3)]
+        annotations[0]['review'] = {
+            'review_id': 'review-a', 'reviewer_type': 'agent', 'method': 'visual_review',
+            'policy_version': 'subtitles-cutscene-v1', 'context_checked': True,
+            'note': 'Private review note about session-a.',
+        }
+        import_labels(self.dataset, self.batch(annotations))
+        output = self.root / 'hub-export'
+        result = export_dataset(self.dataset, output)
+        self.assertEqual(result['rows'], 2)
+        self.assertEqual(result['fully_labeled'], 2)
+        self.assertFalse(result['uploaded'])
+        text = (output / 'images/metadata.jsonl').read_text()
+        self.assertNotIn('session-a', text)
+        self.assertNotIn('annotation_note', text)
+        self.assertNotIn(str(self.source), text)
+        for line in text.splitlines():
+            row = json.loads(line)
+            self.assertTrue(row['is_representative'])
+            self.assertEqual(digest((output / 'images' / row['file_name']).read_bytes()), row['sha256'])
+        self.assertTrue(verify(self.dataset)['verified'])
+        with self.assertRaisesRegex(ValueError, 'already exists'):
+            export_dataset(self.dataset, output)
+
+    def test_hf_export_all_frames_retains_unknown_labels(self):
+        dedupe(self.dataset, 0, 6)
+        output = self.root / 'all-export'
+        result = export_dataset(self.dataset, output, all_frames=True)
+        self.assertEqual(result['rows'], 3)
+        self.assertEqual(result['fully_labeled'], 0)
+        self.assertTrue(all(json.loads(line)['has_subtitles'] is None
+                            for line in (output / 'images/metadata.jsonl').read_text().splitlines()))
 
 
 if __name__ == '__main__':
