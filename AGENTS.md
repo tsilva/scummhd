@@ -59,3 +59,38 @@ upload. Hub publication requires an approved destination/visibility and a review
 credential route for this repository. Never reuse another project's token or a
 cached Hugging Face login. Keep local captures until remote transfer is verified;
 removing them requires the user's explicit authorization.
+
+## Hugging Face credentials
+
+The approved public dataset destination is `tsilva/scummhd-queen`.
+Native `.infisical.yaml` binds Secret Manager project
+`72a466bb-8c3f-482f-a214-cff243afb7e4`, environment `dev`, folder
+`/agents/huggingface-queen`, with source secret `HF_TOKEN`. Parse it as data;
+reject scope overrides, cached Hub tokens and credentials from other projects.
+
+The dedicated Agent Vault bundle is `local-scummhd-queen`
+(`5382d359-c979-4f3d-b931-701e320d9b9a`), HTTP service `huggingface-queen`
+(`f9540a22-d6bf-4bfc-9fd2-f4a04ab4c719`). It brokers a bearer credential only
+to `huggingface.co`, with GET/HEAD/POST and these path prefixes:
+
+- `/api/whoami-v2`
+- `/api/datasets/tsilva/scummhd-queen/revision/main`
+- `/api/datasets/tsilva/scummhd-queen/tree/main`
+- `/api/datasets/tsilva/scummhd-queen/preupload/main`
+- `/api/datasets/tsilva/scummhd-queen/commit/main`
+- `/datasets/tsilva/scummhd-queen/resolve/main`
+
+Use `scripts/hf_vault.py check` for the bounded identity check. This project-owned
+Mac launcher pins the instance and proxy CA, uses a 30-minute native Agent Vault
+session, supplies only a placeholder, and adds an explicit child OS sandbox.
+It does not sandbox Codex Desktop or isolate full-access same-user processes.
+Source keys are never read by ordinary checks. Trusted provisioning/rotation uses
+`scripts/provision_hf_credential.py --apply-from-stdin` separately; keep its input
+and responses in memory, never command arguments, files, logs or token caches.
+Both the Secret Manager slot and Agent Vault copy must be refreshed together.
+
+Fake-key identity rejection and nine sandbox/path-policy checks passed during
+setup. The sandboxed live check authenticated as `tsilva`. Local CLI image upload
+via LFS/Xet is unverified; do not broaden hosts, bypass the sandbox or inject the
+real key to make it work.
+The signed-in Hub website may be used for an explicitly authorized upload.

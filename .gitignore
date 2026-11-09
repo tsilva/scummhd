@@ -1,9 +1,38 @@
-/.venv/
+# Original captures, dataset exports, private evidence and local planning
 /data/
 /.internal/
 /INBOX.md
-__pycache__/
-*.py[cod]
-.DS_Store
+
+# Local credentials and service overrides (native .infisical.yaml is metadata)
 .env
 .env.*
+/.access.local.toml
+/.infisical.local.yaml
+/.infisical.local.json
+/.infisical/
+/.netrc
+
+# Python environments, caches and build output
+/.venv/
+/.venv-*/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Local Hub/tool caches; datasets belong under data/
+/.cache/
+/.hf/
+/.huggingface/
+
+# macOS metadata
+.DS_Store
