@@ -77,39 +77,3 @@ and compare every image SHA-256 with the export receipt and metadata. Keep any
 local copy as a cache until that verification succeeds. Deleting local originals
 is a separate, explicit action. Game-art rights remain separate from the tooling's
 MIT license; the exporter does not assert an image-data license.
-
-## Credential checks and rotation
-
-The native Infisical binding and reviewed Agent Vault service mapping are in
-`AGENTS.md`. The dedicated source is the `scummhd` project's Development folder
-`/agents/huggingface-queen`, secret `HF_TOKEN`; it must contain a fine-grained
-Hugging Face token restricted to this dataset. Hub write permission also includes
-repository settings; Agent Vault further restricts the available HTTP paths.
-
-On the configured Mac, run the bounded read-only check:
-
-```sh
-uv --config-file uv.toml run --locked python scripts/hf_vault.py check
-```
-
-The launcher receives no real Hub key, checks the source binding, pins the proxy
-CA and runs its fixed client inside an OS sandbox. It blocks direct network
-connections, credential-file reads and writes outside its temporary workspace.
-The outer agent and other full-access processes remain outside that boundary.
-It changes no global application defaults, CA trust or shared proxy settings.
-
-After explicitly authorized token creation/rotation, trusted administration uses
-`scripts/provision_hf_credential.py --apply-from-stdin` to update both encrypted
-stores. Supply the value through a private in-memory pipe; never paste it into
-command arguments or a file. This helper uses the existing Infisical administrator
-login and is deliberately separate from ordinary client startup. Re-run the
-identity check afterward. Renew a rejected token in Infisical; do not fall back
-to a cached login or another project's token.
-
-The invalid setup key passed nine policy checks, including blocked direct
-connections, protected-file reads, other repository paths and DELETE requests.
-The sandboxed live check authenticated as `tsilva`. The first 159-frame upload
-used the signed-in Hub file uploader; an anonymous download of its exact commit
-verified all original image hashes and labels. The local CLI's LFS/Xet transfer
-path remains unverified. Use the signed-in uploader for authorized uploads until
-that transport has a compatible reviewed route.
